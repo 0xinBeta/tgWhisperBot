@@ -1,15 +1,10 @@
 import logging
 from telegram import Update, ForceReply
-from telegram.ext import Application, CommandHandler, ContextTypes, filters
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import keys
-
 import whisper
 
 model = whisper.load_model("base")
-result = model.transcribe("audio.mp3")
-print(result["text"])
-
-
 
 token = keys.BOT_TOKEN
 
@@ -19,7 +14,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /hello is issued."""
     user = update.effective_user
@@ -28,18 +22,33 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup=ForceReply(selective=True),
     )
 
+async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle voice messages."""
+    voice = update.message.voice
+    voice_file = await voice.get_file()
+
+    download_path = "audio.ogg"
+
+    await voice_file.download_to_drive(download_path)
+    
+    result = model.transcribe("audio.ogg") 
+
+    await update.message.reply_text(f"{result['text']}")
+
+
 
 def main() -> None:
     """Start the bot."""
-    # Create the Application and pass it your bot's token.
-    application = Application.builder().token(token=token).build()
+    application = Application.builder().token(token).build()
 
-    # on different commands - answer in Telegram
     application.add_handler(CommandHandler("hello", hello))
+
+    # Handle voice messages
+    voice_handler = MessageHandler(filters.VOICE, handle_voice)
+    application.add_handler(voice_handler)
 
     # Run the bot until the user presses Ctrl-C
     application.run_polling(allowed_updates=Update.ALL_TYPES)
-
 
 if __name__ == "__main__":
     main()
