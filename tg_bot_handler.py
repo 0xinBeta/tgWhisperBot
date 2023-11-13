@@ -9,7 +9,7 @@ import openai
 from elevenlabs import set_api_key, generate
 
 
-model = whisper.load_model("medium")
+model = whisper.load_model("large-v3")
 
 token = keys.BOT_TOKEN
 openai.api_key = keys.OPENAI_API
@@ -66,7 +66,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         model="eleven_multilingual_v2"
     )
 
-    await update.message.reply_audio(audio=audio)
+    await update.message.reply_voice(audio=audio)
 
 
 def main() -> None:
