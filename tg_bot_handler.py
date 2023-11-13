@@ -50,8 +50,10 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     question = result['text']
 
+    await update.message.reply_text(question)
+
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-1106-preview",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": f"{question}"}
@@ -66,7 +68,8 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         model="eleven_multilingual_v2"
     )
 
-    await update.message.reply_voice(audio=audio)
+    await update.message.reply_text(bot_resp)
+    await update.message.reply_voice(audio)
 
 
 def main() -> None:
